@@ -1,5 +1,4 @@
 # Dokumentation:
-https://github.com/NilsJannik/RCode-Bachelorarbeit.git
 # ...
 ####
 memory.limit()
