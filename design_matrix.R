@@ -13,3 +13,4 @@ design_matrix <- function(testResults,
   }
   return(connectMatrix)
 }
+

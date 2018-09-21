@@ -4,7 +4,8 @@
 memory.limit()
 memory.limit(size=12000)
 
-#setwd("P:/Bachelorarbeit")
+setwd("C:/Users/Nils Jannik/Desktop/Bachelorarbeit")
+
 load("Datensaetze/mainHiera.RData") 
 
 library(igraph)
@@ -12,6 +13,7 @@ library(PMCMR)
 analyse <- function(data = mainHiera,
                     perfName = "ydist",
                     expParName = c("a","b","cc","d"),
+                    confName = "confName",
                     algo.Name = c("Arc", "Stan", "Ico", "IcoCorrected", "Imp", 
                                   "ImpArc", "Wedge") )
 {
@@ -19,22 +21,22 @@ analyse <- function(data = mainHiera,
     data <- data[,colnames(data) != "jobID"]
   }
   
-  # Design JobID's
-  jobID <- factor(apply(mainHiera[,expParName], 1, paste,collapse = "_"))
-  Nlevel <- length(levels(jobID))
-  jobID <- sort(as.vector(jobID),index = TRUE)
-  data <- data[jobID$ix,]
-  jobID <- jobID$x
-  newdata <- data.frame(data, jobID = jobID) # Neue Variable im Datensatz .expID statt jobID
+  # Design .expID's
+  .expID <- factor(apply(mainHiera[,expParName], 1, paste,collapse = "_"))
+  Nlevel <- length(levels(.expID))
+  .expID <- sort(as.vector(.expID),index = TRUE)
+  data <- data[.expID$ix,]
+  .expID <- .expID$x
+  newdata <- data.frame(data, .expID = .expID) # Neue Variable im Datensatz .expID statt jobID
 
-  source("RAnalyse/clusterFunction1.RData")
-  h.clust <- clusterFunction1(data = newdata,
+  source("RAnalyse/clusterFunctionHClust.RData")
+  clusterResult <- clusterFunctionHclust(data = newdata,
                           perfName = perfName,
-                          jobID = jobID)
-
-  source("RAnalyse/mergefunction.RData")
-  clusterResult <- mergefunction(h.clust,5) # mergefunction noch optimieren!
-                                                  # automatische Clustergroessenbestimmung einfuegen
+                          .expID = .expID)
+# 
+#   source("RAnalyse/mergefunction.RData")
+#   clusterResult <- mergefunction(h.clust,5) # mergefunction noch optimieren!
+#                                                   # automatische Clustergroessenbestimmung einfuegen
 
   return(clusterResult)
 }
@@ -45,8 +47,11 @@ source("RAnalyse/designSections.RData")
 sections <- designSections(data,clusterResult)
 
 source("RAnalyse/pairwiseTests.RData")
-testResults <- pairwiseTests(sections)
 
+testResults <- pairwiseTests(sections,
+                             perfName,
+                             confName,
+                             algo.Name)
 
 source("RAnalyse/designGraph.RData")
 source("RAnalyse/design_matrix.RData")
@@ -60,4 +65,24 @@ designGraph(testResults,
             design_edges) 
 
 ################################################################################
+
+# An Analysis of Benchmark datasets based on selectable cluster methods 
+# combined with a graphical Illustration by directed graphs.
+# 
+# Eine Analyse von Benchmark Datensätzen basierend auf wählbahren 
+# Clustermethoden in Kombination mit gerichteten Graphen.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
