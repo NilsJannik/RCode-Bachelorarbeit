@@ -1,0 +1,23 @@
+
+designSections <- function(data,
+                           clusterResult){
+  clustersize <- length(clusterResult)
+  sections <- list()
+  # #
+  # `%existing%` = function(A, B) {
+  #   A <- sort(A)
+  #   exist <- numeric(0)
+  #   for(i in 1:length(A)){
+  #     temp <- which(A[i] == B)
+  #     exist <- c(exist, temp)
+  #   }
+  #   return(exist)
+  # }
+  ##
+  for(i in 1:clustersize){
+    chosenID <- sort(clusterResult[[i]])
+    # sections[[i]] <- data[chosenID %existing% data$jobID,]
+    sections[[i]] <- data[chosenID,]
+  }
+  return(sections)
+}
