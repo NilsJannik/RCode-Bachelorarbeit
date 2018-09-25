@@ -27,10 +27,12 @@ designGraph <- function(testResults,
   par(mfrow = c(h,v))
   for(i in 1:length(testResults)){
     
-    connections <- design_matrix(testResults[[i]], 
-                                 connectMatrix = connection_matrix)
-    sorted <- sort(rankMatrix[i,], index = TRUE)$ix
-    connections <- connections[sorted,]
+    connections <- design_matrix(testResults = testResults[[i]], 
+                                 connectMatrix = connection_matrix,
+                                 rankMatrix = rankMatrix,
+                                 testNiveau = 0.05)
+    
+    
     
     arrows <- design_edges(connections)
     g <- make_empty_graph() + vertices(algo.Name)
