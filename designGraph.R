@@ -29,7 +29,7 @@ designGraph <- function(testResults,
     
     connections <- design_matrix(testResults = testResults[[i]], 
                                  connectMatrix = connection_matrix,
-                                 rankMatrix = rankMatrix,
+                                 rankVector = rankMatrix[i,],
                                  testNiveau = 0.05)
     
     
