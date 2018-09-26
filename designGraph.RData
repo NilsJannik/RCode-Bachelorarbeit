@@ -23,22 +23,24 @@ designGraph <- function(testResults,
   
   ############################################################################## 
   ## design_matrix Funktion muss noch komplett abgeaendert und angepasst werden
-
+# i <- 1
   par(mfrow = c(h,v))
   for(i in 1:length(testResults)){
     
     connections <- design_matrix(testResults = testResults[[i]], 
                                  connectMatrix = connection_matrix,
-                                 rankMatrix = rankMatrix,
+                                 rankVector = rankMatrix[i,],
                                  testNiveau = 0.05)
     
-    
+    ord <- sort(rankMatrix[i,], index = TRUE)$ix
     
     arrows <- design_edges(connections)
     g <- make_empty_graph() + vertices(algo.Name)
     g <- g + edges(arrows)
     
-    coords <- layout_(g,plotMethod) 
+    # coords <- layout_(g,plotMethod) 
+    coords <- layout_in_circle(g,order = ord)
+    
     
     N <- gsize(g)
     # edge_attr(g) <- list(color = rainbow(N)) # Farben noch anpassen :P
@@ -51,7 +53,7 @@ designGraph <- function(testResults,
     
     plot(g, rescale = FALSE,
          layout = coords,
-         edge.arrow.size = 0.2,
+         edge.arrow.size = 0.03,
          vertex.label.cex = 0.9,
          vertex.label.color = "black")
   }

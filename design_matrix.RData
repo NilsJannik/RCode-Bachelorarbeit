@@ -1,10 +1,10 @@
 design_matrix <- function(testResults, 
                           connectMatrix,
-                          rankMatrix,
+                          rankVector,
                           testNiveau){
   pValues <- testResults$p.value
   
-  sorted <- sort(rankMatrix[v,], index = TRUE)$ix ## Algo mit bester Performance in 1. Zeile usw
+  sorted <- sort(rankVector, index = TRUE)$ix ## Algo mit bester Performance in 1. Zeile usw
   connectMatrix <- connectMatrix[sorted,]
   rNames <- rownames(pValues)
   cNames <- colnames(pValues)

@@ -52,7 +52,7 @@ sections <- designSections(data = mainHiera,
 # Wie sind die Einstellungen in den einzelnen Clustern:
 # s <- sections[[1]]
 
-apply(sections[[5]][,expParName],2,table)
+# apply(sections[[5]][,expParName],2,table)
 ##
 source("RAnalyse/pairwiseTests.RData")
 
@@ -70,6 +70,7 @@ testResults <- pairwiseTests(sections,
 source("RAnalyse/designGraph.RData")
 source("RAnalyse/design_matrix.RData")
 source("RAnalyse/design_edges.RData")
+# pdf("GerichteteGraphen.pdf")
 designGraph(testResults,
             data = mainHiera,
             plotMethod = in_circle(), 
@@ -77,12 +78,27 @@ designGraph(testResults,
             v = 3,# diese maassen finde ich bis jetzt am besten. Muss noch automatisiert werden
             design_matrix,
             design_edges) 
-
+# dev.off()
 ################################################################################
 
+# To do:
+#   -Transitivitaet ausnutzen
+# - unterschiedliche Pfeilarten (fuer versch Sig niveaus)
+# -Funktionseigenschaften der Clustermittelpunkte
+# -Funktionen dokumentieren
+# -Packet: Cluster anschauen
+# -automatische Clustergeroessenbestimmung (vlt mit BIC...)
 
-
-
+# Connectionmatrix zu Graph 1
+#              Arc Stan Ico IcoCorrected Imp ImpArc Wedge
+# Imp            1    1   1            1   0      1     0
+# ImpArc         0    1   1            1   0      0     0
+# Arc            0    0   0            0   0      0     0
+# IcoCorrected   0    0   0            0   0      0     0
+# Stan           0    0   0            0   0      0     0
+# Ico            0    0   0            0   0      0     0
+# Wedge          0    0   0            0   0      0     0
+# > 
 
 
 
