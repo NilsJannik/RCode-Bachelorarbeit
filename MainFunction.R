@@ -70,6 +70,8 @@ testResults <- pairwiseTests(sections,
 source("RAnalyse/designGraph.RData")
 source("RAnalyse/design_matrix.RData")
 source("RAnalyse/design_edges.RData")
+source("RAnalyse/searchForTransitivity.RData")
+source("RAnalyse/useTransitivity.RData")
 # pdf("GerichteteGraphen.pdf")
 designGraph(testResults,
             data = mainHiera,
@@ -77,29 +79,22 @@ designGraph(testResults,
             h = 2, 
             v = 3,# diese maassen finde ich bis jetzt am besten. Muss noch automatisiert werden
             design_matrix,
-            design_edges) 
+            design_edges,
+            useTransitivity,
+            searchForTransitivity) 
 # dev.off()
 ################################################################################
 
 # To do:
-#   -Transitivitaet ausnutzen
+# -Transitivitaet ausnutzen
 # - unterschiedliche Pfeilarten (fuer versch Sig niveaus)
 # -Funktionseigenschaften der Clustermittelpunkte
 # -Funktionen dokumentieren
 # -Packet: Cluster anschauen
 # -automatische Clustergeroessenbestimmung (vlt mit BIC...)
 
-# Connectionmatrix zu Graph 1
-#              Arc Stan Ico IcoCorrected Imp ImpArc Wedge
-# Imp            1    1   1            1   0      1     0
-# ImpArc         0    1   1            1   0      0     0
-# Arc            0    0   0            0   0      0     0
-# IcoCorrected   0    0   0            0   0      0     0
-# Stan           0    0   0            0   0      0     0
-# Ico            0    0   0            0   0      0     0
-# Wedge          0    0   0            0   0      0     0
-# > 
 
 
+##########
 
 
