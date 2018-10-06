@@ -74,14 +74,16 @@ source("RAnalyse/searchForTransitivity.RData")
 source("RAnalyse/useTransitivity.RData")
 # pdf("GerichteteGraphen.pdf")
 designGraph(testResults,
-            data = mainHiera,
-            plotMethod = in_circle(), 
+            data = mainHiera, 
+            confName = confName,
             h = 2, 
-            v = 3,# diese maassen finde ich bis jetzt am besten. Muss noch automatisiert werden
+            v = 3,# diese Maassen finde ich bis jetzt am besten. Muss noch automatisiert werden
             design_matrix,
             design_edges,
             useTransitivity,
-            searchForTransitivity) 
+            searchForTransitivity,
+            shape = "circle",# oder square / sphere usw
+            edge.width = 1) 
 # dev.off()
 ################################################################################
 

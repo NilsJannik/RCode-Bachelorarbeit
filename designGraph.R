@@ -1,66 +1,76 @@
 
 designGraph <- function(testResults, 
                         data,
-                        plotMethod = in_circle(),
+                        confName = confName,
                         h = 3,# Maaße muss automatisiert bestimmt werden...
                         v = 2,
                         design_matrix,
                         design_edges,
                         useTransitivity,
-                        searchForTransitivity){
+                        searchForTransitivity,
+                        shape = "circle",
+                        edge.width = 1){
   
   rankMatrix <- testResults[[2]]
   testResults <- testResults[[1]]
   
-  
+  # Kreiere connection_matrix fuer die Beziehungen zwischen den Algorithmen: 
   algo.Name <- as.vector(unique(data$confName))
   count_algos <- length(algo.Name)
   
-  connection_matrix <- matrix(rep(0,count_algos^2),
+  connection_matrix <- matrix(rep(0, count_algos^2),
                               nrow = count_algos, 
                               ncol = count_algos)
   diag(connection_matrix) <- rep(0,count_algos)
   rownames(connection_matrix) <- algo.Name
   colnames(connection_matrix) <- algo.Name
   
-  ############################################################################## 
-  ## design_matrix Funktion muss noch komplett abgeaendert und angepasst werden
-  # i <- 1
+  # Erstelle passend zu jeder Testmatrix ein gerichteter Graph:
   par(mfrow = c(h,v))
   for(i in 1:length(testResults)){
-    
+    # Erstelle passend zu den Testresultaten zum aktuellen Niveau die
+    # connectionsmatrix:
+    sorted <- sort(rankMatrix[i,], index = TRUE) ## Algo mit bester Performance in 1. Zeile usw
     connections <- design_matrix(testResults = testResults[[i]], 
                                  connectMatrix = connection_matrix,
-                                 rankVector = rankMatrix[i,],
+                                 order = sorted$ix,
                                  testNiveau = 0.05)
-    # Transitivitaet ausnutzen
+    # Transitivitaet ausnutzen und entsprechende Verbindungen entfernen:
     connections <-  useTransitivity(connections)
     
-    ord <- sort(rankMatrix[i,], index = TRUE)
-    ord_index <- ord$ix
-    ord_ranks <- ord$x 
+    ord_index <- sorted$ix
+    ord_ranks <- sorted$x 
+    # Entsprechend der connections-Matrix werden die edges = Pfeile erstellt
     arrows <- design_edges(connections)
-    g <- make_empty_graph() + vertices(algo.Name)
-    g <- g + edges(arrows)
-    
-    coords <- layout_in_circle(g,order = ord_index)
-    
-    
-    N <- gsize(g)
-    edge_attr(g) <- list(color = rep("black",N))
-    k <- length(algo.Name)
+    # Erstelle das Graphenobjekt mit im Kreis der Rangordnung nach geordnete
+    # Algorithmen.
+    graphobject <- make_empty_graph() + vertices(algo.Name) + edges(arrows)
+    coords <- layout_in_circle(graphobject,
+                               order = ord_index)
+    # Einstellungsparameter der edges:
+    k <- gsize(graphobject)
+    edge_attr(graphobject) <- list(color = rep("black", k) )
+    ############################################################################
+    # Einstellungsparameter der vertexes = "Kreise"
     radius <- max(nchar(algo.Name)) * 4
     vertex_names <- paste(algo.Name,"\n", round(rankMatrix[i,], digits = 0))
     
-    vertex_attr(g) <- list(name = vertex_names,
-                           color = rep("white",k),
-                           size = rep(radius,k))
-    vertex_attr(g)$color[ord_index[1]] <- rgb(255 ,83 ,40 ,maxColorValue = 256)
-    plot(g, rescale = FALSE,
+    vertex_attr(graphobject) <- list(
+                            name = vertex_names,
+                           color = rep("white", count_algos),
+                            size = rep(radius, count_algos),
+                           shape = rep(shape, count_algos))
+    vertex_attr(graphobject)$color[ord_index[1]] <- rgb(255 ,83 ,40 , maxColorValue = 256)
+    linetypes <- 1 ### Muss spaeter je nach Niveau festgelegt werden (kann ein
+    ### Vektor mit allen Typen fuer jeden edge einzelnd sein)
+    plot(graphobject, 
+         rescale = FALSE,
          layout = coords,
-         edge.arrow.size = 0.05,
+         edge.arrow.size = 0.2,
          vertex.label.cex = 0.9,
-         vertex.label.color = "black")
+         vertex.label.color = "black",
+         edge.width = edge.width,
+         edge.lty = linetypes)
   }
   par(mfrow = c(1,1))
 }
