@@ -1,4 +1,3 @@
-
 designGraph <- function(testResults, 
                         data,
                         confName = confName,
@@ -8,8 +7,11 @@ designGraph <- function(testResults,
                         design_edges,
                         useTransitivity,
                         searchForTransitivity,
+                        transform_connections,
                         shape = "circle",
-                        edge.width = 1){
+                        edge.width = 1,
+                        testNiveaus = c(1e-10,1e-5,1e-2,5e-1),
+                        clustmittel){
   
   rankMatrix <- testResults[[2]]
   testResults <- testResults[[1]]
@@ -31,17 +33,34 @@ designGraph <- function(testResults,
     # Erstelle passend zu den Testresultaten zum aktuellen Niveau die
     # connectionsmatrix:
     sorted <- sort(rankMatrix[i,], index = TRUE) ## Algo mit bester Performance in 1. Zeile usw
-    connections <- design_matrix(testResults = testResults[[i]], 
-                                 connectMatrix = connection_matrix,
-                                 order = sorted$ix,
-                                 testNiveau = 0.05)
-    # Transitivitaet ausnutzen und entsprechende Verbindungen entfernen:
-    connections <-  useTransitivity(connections)
-    
     ord_index <- sorted$ix
     ord_ranks <- sorted$x 
-    # Entsprechend der connections-Matrix werden die edges = Pfeile erstellt
-    arrows <- design_edges(connections)
+    
+    connections <- list()
+    testNiveaus <- sort(testNiveaus) # Falls die Niveaus nicht geordnet eingegeben werden
+    for(j in 1:length(testNiveaus)){
+      connections[[j]] <- design_matrix(testResults = testResults[[i]], 
+                                        connectMatrix = connection_matrix,
+                                        order = sorted$ix,
+                                        testNiveau = testNiveaus[j])
+    }
+    correct_connect <- transform_connections(connections)
+    # Transitivitaet ausnutzen und entsprechende Verbindungen entfernen:
+    lty_type <- c()
+    arrows <- c()
+    nNiveaus <- length(testNiveaus)
+    for(j in 1:nNiveaus){
+      correct_connect[[j]] <-  useTransitivity(correct_connect[[j]])
+      lty_type <- c(lty_type, rep(j, sum(correct_connect[[j]])))
+      ## Wenn viele Niveaus gewaehlt werden
+      ## funktioniert das hier nicht
+      
+      # Entsprechend der connections-Matrix werden die edges = Pfeile erstellt
+      arrows <- c(arrows, design_edges(correct_connect[[j]]))
+    }
+    
+    
+    
     # Erstelle das Graphenobjekt mit im Kreis der Rangordnung nach geordnete
     # Algorithmen.
     graphobject <- make_empty_graph() + vertices(algo.Name) + edges(arrows)
@@ -53,16 +72,26 @@ designGraph <- function(testResults,
     ############################################################################
     # Einstellungsparameter der vertexes = "Kreise"
     radius <- max(nchar(algo.Name)) * 4
-    vertex_names <- paste(algo.Name,"\n", round(rankMatrix[i,], digits = 0))
+    vertex_names <- paste(colnames(rankMatrix),"\n", round(rankMatrix[i,], digits = 0))
     
     vertex_attr(graphobject) <- list(
-                            name = vertex_names,
-                           color = rep("white", count_algos),
-                            size = rep(radius, count_algos),
-                           shape = rep(shape, count_algos))
-    vertex_attr(graphobject)$color[ord_index[1]] <- rgb(255 ,83 ,40 , maxColorValue = 256)
-    linetypes <- 1 ### Muss spaeter je nach Niveau festgelegt werden (kann ein
-    ### Vektor mit allen Typen fuer jeden edge einzelnd sein)
+      name = vertex_names,
+      color = rep("white", count_algos),
+      size = rep(radius, count_algos),
+      shape = rep(shape, count_algos))
+    vertex_attr(graphobject)$color[ord_index[1]] <- rgb(255 ,83 ,40 , 
+                                                        maxColorValue = 256)
+
+    subtitle <- c("Clustermittel: \n")
+    rnames <- rownames(clustmittel)
+    nr <- nrow(clustmittel)
+    if(nr != 1){
+      for(k in 1:(nr - 1)){
+        subtitle <- paste(subtitle, rnames[k], "=", clustmittel[k,i],",")    
+      }
+    }
+    subtitle <- paste(subtitle, rnames[nr], "=", clustmittel[nr,i])
+    
     plot(graphobject, 
          rescale = FALSE,
          layout = coords,
@@ -70,7 +99,15 @@ designGraph <- function(testResults,
          vertex.label.cex = 0.9,
          vertex.label.color = "black",
          edge.width = edge.width,
-         edge.lty = linetypes)
+         edge.lty = lty_type,
+         sub = subtitle)
   }
+  plot.new()
+  legend(title = "Testniveaus",
+         "center",
+         legend = testNiveaus, 
+         lty = 1:nNiveaus,
+         col = "black",
+         bty = "n")
   par(mfrow = c(1,1))
 }

@@ -50,9 +50,11 @@ sections <- designSections(data = mainHiera,
 ##
 
 # Wie sind die Einstellungen in den einzelnen Clustern:
-# s <- sections[[1]]
 
-# apply(sections[[5]][,expParName],2,table)
+clustmittel <- round(sapply(1:5,
+                                    function(i) colMeans(sections[[i]][,expParName])),
+                             digits = 3)
+
 ##
 source("RAnalyse/pairwiseTests.RData")
 
@@ -72,6 +74,7 @@ source("RAnalyse/design_matrix.RData")
 source("RAnalyse/design_edges.RData")
 source("RAnalyse/searchForTransitivity.RData")
 source("RAnalyse/useTransitivity.RData")
+source("RAnalyse/transform_connections.RData")
 # pdf("GerichteteGraphen.pdf")
 designGraph(testResults,
             data = mainHiera, 
@@ -82,14 +85,15 @@ designGraph(testResults,
             design_edges,
             useTransitivity,
             searchForTransitivity,
-            shape = "circle",# oder square / sphere usw
-            edge.width = 1) 
+            transform_connections,
+            shape = "circle",# oder square / sphere usw fuer Form der vertexes
+            edge.width = 1,
+            testNiveaus = c(1e-10,1e-5,1e-2,0.5),
+            clustmittel) 
 # dev.off()
 ################################################################################
 
 # To do:
-# -Transitivitaet ausnutzen
-# - unterschiedliche Pfeilarten (fuer versch Sig niveaus)
 # -Funktionseigenschaften der Clustermittelpunkte
 # -Funktionen dokumentieren
 # -Packet: Cluster anschauen
