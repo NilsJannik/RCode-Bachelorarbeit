@@ -1,28 +1,15 @@
 # Funktion - Implementierung eines Hierachisches Clusterverfahren
 # Eingabe: 
-# - data: Der gegebene Benchmarkdatensatz mit zusaetzlich eingefuergen
-#         Experimenten ID's (siehe .expID)
-# - perfName: Welcher Parameter soll als Performanzindikator genutzt werden
-#             (character)
-# - .expID: Jede unterschiedliche Einstellung bekommt eine einzelne 
-#           Experiment ID
+# - data: Eine data.frame mit den Performanzwerten und zugehoerigen
+#         Experimenten ID's
 # - distMethod: Welche distanzmethode wird die Abstaende der Daten in R genutzt
 # - clusterMethod: Welche hierarchische Clustermethode soll genutzt werden
 # Rueckgabe: 
 # Eine Liste der Laenge der optimalen Clustergroesse in der in jedem Element 
 # alle dieser Clustergruppe zugehoerigen Elemente (in Form ihrer Indizes) stehen.
 clusterFunctionHclust <- function(data, 
-                             perfName, 
-                             .expID, 
                              distMethod = "euclidean", 
                              clusterMethod = "complete"){
-  
-  # Selektiere die Spalte mit dem Performanzindikator herraus und fuege die
-  # zugehoerige expID hinzu
-  N <- length(unique(.expID))
-  data <- data.frame(subset(data, select = perfName), 
-                     rep(1 : N, each = table(.expID)[1]))
-  colnames(data) <- c("ydist",".expID")
   
   # hierachisches Clustern der Performancewerte.
   h.cluster <- hclust(dist(data, method = distMethod), 
@@ -92,7 +79,6 @@ clusterFunctionHclust <- function(data,
         # Fuege Object1 mit MergeID hinter Object2 ein
         nl2 <- length(Layers[[posObject2]])
         Layers[[posObject2]][nl2:(nl2 + 1)] <- c(object1, i)
-        
       }
       # Sind Object1 und Object2 groesser als 0, so wurden beide bereits 
       # gemerged.
@@ -115,7 +101,6 @@ clusterFunctionHclust <- function(data,
     # Lese die der vorher bestimmten Clustergroesse entsprechenden Anzahl an
     # Objecten aus dem Layersobjekt herraus und gebe dieses zurueck
     lLayers <- length(Layers)
-    # Layers[[lLayers]] <- NULL
     result <- list()
     ctr <- 1
     for(i in 1:(lLayers - 1)){

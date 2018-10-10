@@ -44,11 +44,18 @@ analyse <- function(data = mainHiera,
   data <- data[.expID$ix,]
   .expID <- .expID$x
   newdata <- data.frame(data, .expID = .expID) 
-
+  
+  # Selektiere die Spalte mit dem Performanzindikator herraus und fuege die
+  # zugehoerige expID hinzu
+  N <- length(unique(.expID))
+  data <- data.frame(subset(newdata, select = perfName), 
+                     rep(1 : N, each = table(.expID)[1]))
+  colnames(data) <- c("ydist",".expID")
+  
   # Lade ausgewaehlte clusterFunction  (bisjetzt nur clusterFunctionHclust)
   source(paste0("RAnalyse/",clusterFunction,".RData"))
 
-  clusterResult <- clusterFunctionHclust(data = newdata,
+  clusterResult <- clusterFunction(data = data,
                           perfName = perfName,
                           .expID = .expID, 
                           distMethod = "euclidean", 
@@ -75,6 +82,7 @@ source("RAnalyse/transform_connections.RData")
 sections <- designSections(data = mainHiera,
                            clusterResult = clusterResult)
 ##
+expParName <- c("a","b","cc","d")
 # Wie sind die Einstellungen in den einzelnen Clustern (Clustermittelpunkte):
 clustmittel <- round(sapply(1:length(sections),
                             function(i) colMeans(sections[[i]][,expParName])),
@@ -108,9 +116,8 @@ designGraph(testResults,
 ################################################################################
 
 # To do:
-# -Funktionseigenschaften der Clustermittelpunkte
 # -Funktionen dokumentieren
-# -Packet: Cluster anschauen
+# -Paket: Cluster anschauen
 # -automatische Clustergeroessenbestimmung (vlt mit BIC...)
 
 

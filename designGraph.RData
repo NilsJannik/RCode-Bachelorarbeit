@@ -46,6 +46,10 @@ designGraph <- function(testResults,
                         edge.width = 1,
                         testNiveaus = c(1e-10,1e-5,1e-2,5e-1),
                         clustmittel){
+  if(length(testNiveaus) > 6){
+    stop("Hey du Vollhonk! Du darfst nur maximal 6 Niveaus nutzen. Lies doch mal
+         die Doku! :D")
+  }
   all_pValues <- testResults[[1]]
   rankMatrix <- testResults[[2]]
   
