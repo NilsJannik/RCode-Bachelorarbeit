@@ -1,3 +1,37 @@
+# Funktion - Erstellt die gerichteten Graphen zu den berechneten 
+#               Testergebnissen 
+# Eingabe: 
+# - testResults: Eine Liste der Laenge 
+#     + results: Eine Liste mit den jeweili:gen Matrizen zu den jeweiligen Cluster-
+#               gruppen, in denen die jeweiligen p-Werte der einzelnen paarweisen
+#               Tests stehen
+#     + rankMatrix: Eine Matrix in dem in Zeile i und Spalte j der Durchschnittsrang
+#               der Performance des j-ten Algorithmus in der i-ten Clustergruppe
+#               ist
+# - data: Der gegebene Datensatz
+# - confName: Angabe des Spalennames mit den Algorithmen
+# - h: Hoehe des Graphenfenster
+# - v: Breite des Graphenfenster
+# - design_matrix: Kreiere eine Connectionmatrix mit den entsprechenden Verbin-
+#                  dungen zu den einelnen Niveauss
+# - design_edges: Funktion, die den Verbindungsvektor zwischen den vertexes
+#                 erstellt
+# - useTransitivity: Funktion um die Transitive Verbindungen innerhalb der 
+#                    Graphen nutzen
+# - searchForTransitivity: Funktion, die herrausfindet, ob eine gegebene 
+#                          Connection durch andere gegebene Connections wieder-
+#                          gespiegelt werden kann
+# - transform_connections: Funktion, die unnoetige Connections entfernt, die 
+#                         durch niedrigere Niveaus bereits wiedergespiegelt
+#                          werden.
+# - shape: Form der Vertexes (Character)
+# - edge.width: Pfeilbreite (Integer)
+# - testNiveaus: Nach welchen Testniveaus sollen die connections gesetzt werden
+#                (Doubles aus [0,1]) (Maximal 6 Niveaus)
+# - clustmittel: Clustermittelpunkte (Mittelpunkte der einzelnen Parameterein-
+#                stellungen in den einzelnen Clustergruppen)
+# Rueckgabe:
+# Ein Plot mit den benoetigten gerichteten Graphen zu allen Clustergruppen
 designGraph <- function(testResults, 
                         data,
                         confName = confName,
@@ -12,14 +46,13 @@ designGraph <- function(testResults,
                         edge.width = 1,
                         testNiveaus = c(1e-10,1e-5,1e-2,5e-1),
                         clustmittel){
-  
+  all_pValues <- testResults[[1]]
   rankMatrix <- testResults[[2]]
-  testResults <- testResults[[1]]
   
   # Kreiere connection_matrix fuer die Beziehungen zwischen den Algorithmen: 
+  # erstelle Basis connection_matrix:
   algo.Name <- as.vector(unique(data$confName))
   count_algos <- length(algo.Name)
-  
   connection_matrix <- matrix(rep(0, count_algos^2),
                               nrow = count_algos, 
                               ncol = count_algos)
@@ -29,19 +62,19 @@ designGraph <- function(testResults,
   
   # Erstelle passend zu jeder Testmatrix ein gerichteter Graph:
   par(mfrow = c(h,v))
-  for(i in 1:length(testResults)){
+  for(i in 1:length(all_pValues)){
     # Erstelle passend zu den Testresultaten zum aktuellen Niveau die
     # connectionsmatrix:
-    sorted <- sort(rankMatrix[i,], index = TRUE) ## Algo mit bester Performance in 1. Zeile usw
-    ord_index <- sorted$ix
-    ord_ranks <- sorted$x 
+    sorted_perf <- sort(rankMatrix[i,], index = TRUE) 
+    ord_index <- sorted_perf$ix
+    ord_ranks <- sorted_perf$x 
     
     connections <- list()
     testNiveaus <- sort(testNiveaus) # Falls die Niveaus nicht geordnet eingegeben werden
     for(j in 1:length(testNiveaus)){
-      connections[[j]] <- design_matrix(testResults = testResults[[i]], 
+      connections[[j]] <- design_matrix(pValues = all_pValues[[i]]$p.value, 
                                         connectMatrix = connection_matrix,
-                                        order = sorted$ix,
+                                        order = ord_index,
                                         testNiveau = testNiveaus[j])
     }
     correct_connect <- transform_connections(connections)
@@ -50,17 +83,17 @@ designGraph <- function(testResults,
     arrows <- c()
     nNiveaus <- length(testNiveaus)
     for(j in 1:nNiveaus){
-      correct_connect[[j]] <-  useTransitivity(correct_connect[[j]])
+      # Entferne durch die Transitivitaetseigenschaft ueberfluessige Verbindungen
+      correct_connect[[j]] <-  useTransitivity(correct_connect[[j]],
+                                               searchForTransitivity)
       lty_type <- c(lty_type, rep(j, sum(correct_connect[[j]])))
-      ## Wenn viele Niveaus gewaehlt werden
-      ## funktioniert das hier nicht
+      ## Wenn zu viele Niveaus gewaehlt werden 
+      ## funktioniert das hier nicht ( > 6 )
       
       # Entsprechend der connections-Matrix werden die edges = Pfeile erstellt
       arrows <- c(arrows, design_edges(correct_connect[[j]]))
     }
-    
-    
-    
+  
     # Erstelle das Graphenobjekt mit im Kreis der Rangordnung nach geordnete
     # Algorithmen.
     graphobject <- make_empty_graph() + vertices(algo.Name) + edges(arrows)

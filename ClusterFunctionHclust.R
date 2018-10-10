@@ -1,3 +1,16 @@
+# Funktion - Implementierung eines Hierachisches Clusterverfahren
+# Eingabe: 
+# - data: Der gegebene Benchmarkdatensatz mit zusaetzlich eingefuergen
+#         Experimenten ID's (siehe .expID)
+# - perfName: Welcher Parameter soll als Performanzindikator genutzt werden
+#             (character)
+# - .expID: Jede unterschiedliche Einstellung bekommt eine einzelne 
+#           Experiment ID
+# - distMethod: Welche distanzmethode wird die Abstaende der Daten in R genutzt
+# - clusterMethod: Welche hierarchische Clustermethode soll genutzt werden
+# Rueckgabe: 
+# Eine Liste der Laenge der optimalen Clustergroesse in der in jedem Element 
+# alle dieser Clustergruppe zugehoerigen Elemente (in Form ihrer Indizes) stehen.
 clusterFunctionHclust <- function(data, 
                              perfName, 
                              .expID, 
@@ -14,10 +27,16 @@ clusterFunctionHclust <- function(data,
   # hierachisches Clustern der Performancewerte.
   h.cluster <- hclust(dist(data, method = distMethod), 
                       method = clusterMethod)  
-  ########
   
-  # Funktion zum Verarbeiten des mergeobjekt aus h.cluster:
-  # naehere Erlaeuterung zum Funktionskopf folgt...
+  # Funktion - Vollzieht die in hclust vollzogenen mergeoperationen nach und 
+  #            findet so die jeweiligen Gruppen bei einer gegebenen optimalen
+  #            Clustergroesse
+  # Eingabe: 
+  # - hc: Ein Objekt der Klasse hclust (Rueckgabe der hclust - Funktion)
+  # - clustersize: optimale Clustergroesse (Integer)
+  # Rueckgabe:
+  # Eine Liste der Laenge clustercize in der in jedem Element alle dieser 
+  # Clustergruppe zugehoerigen Elemente (in Form ihrer Indizes) stehen.
   mergefunction <- function(hc, clustersize){ # braucht aktuell noch ewig
     # Filter das mergeobject aus dem h.cluster Objekt herraus
     mo <- hc$merge 
@@ -25,7 +44,6 @@ clusterFunctionHclust <- function(data,
     N <- max(abs(mo))
     # Erstelle Layersobjekt zum nachvollziehen des Clusterings
     Layers <- list()
-    # Layers[[N]] <- 0 #evtl wieder ausklammern#########################
     
     # Anhand einer sogenannten MergeID wird das entsprechende gemergde Objekt 
     # innerhalb einer entsprechenden Liste von Objekten gefunden
@@ -94,7 +112,6 @@ clusterFunctionHclust <- function(data,
         }
       
     }
-    
     # Lese die der vorher bestimmten Clustergroesse entsprechenden Anzahl an
     # Objecten aus dem Layersobjekt herraus und gebe dieses zurueck
     lLayers <- length(Layers)
@@ -111,7 +128,8 @@ clusterFunctionHclust <- function(data,
     return(result)
   }
   
-  clusterResult <- mergefunction(h.cluster,5)
+  clusterResult <- mergefunction(h.cluster, clustersize = 5 ) 
+  ## Clustersize muss noch automatisch bestimmt werden 
   ########
   return(clusterResult)
   

@@ -1,4 +1,14 @@
-useTransitivity <- function(cmatrix){
+# Funktion - Entfernt alle durch die Transitivitaetseigenschaft ueberfluessigen
+#            Verbindungen
+# Eingabe: 
+# - cmatrix: Eine gegebene Connectionmatrix
+# - searchForTransitivity: Eine Funktion, welche durch Transitivitaet 
+#                          ueberfluessigen Verbindungen anhand einer cmatrix
+#                          erkennt
+# Rueckgabe:
+# Eine Connectionmatrix ohne ueberfluessige Verbindungen
+useTransitivity <- function(cmatrix,
+                            searchForTransitivity){
   cnames <- colnames(cmatrix)
   rnames <- rownames(cmatrix)
   nc <- length(cnames)
@@ -8,10 +18,11 @@ useTransitivity <- function(cmatrix){
       if(cmatrix[i,j] == 1){
         transi <- searchForTransitivity(
           result = c(),
-          cmatrix,
-          cnames,
-          rnames[i],
-          cnames[j])
+          cmatrix = cmatrix,
+          cnames = cnames,
+          start = rnames[i],
+          ziel = cnames[j],
+          first = TRUE)
         if(transi){
           cmatrix[i,j] <- 0
         }

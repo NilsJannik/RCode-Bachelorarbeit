@@ -1,3 +1,12 @@
+# Funktion - Entfernt alle Verbindungen zwischen zwei Algorithmen, welche 
+#            bereits fuer ein kleineres Signifikanzniveau signifikant sind
+# Eingabe:
+# - connections: Eine Liste von connection Matrizen zu den gegebenen 
+#                Testniveaus
+# Rueckgabe:
+# Eine Liste von connection Matrizen zu den gegebenen Testniveaus ohne ueber-
+# fluessige Verbindungen aufgrund der Niveaus (Transitivitaet noch nicht
+# ausgenutzt)
 transform_connections <- function(connections){
   if(length(connections) == 1){
     return(connections)
