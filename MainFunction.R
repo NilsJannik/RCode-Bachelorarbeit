@@ -54,12 +54,11 @@ analyse <- function(data = mainHiera,
   
   # Lade ausgewaehlte clusterFunction  (bisjetzt nur clusterFunctionHclust)
   source(paste0("RAnalyse/",clusterFunction,".RData"))
-
-  clusterResult <- clusterFunction(data = data,
-                          perfName = perfName,
-                          .expID = .expID, 
+  
+clusterResult <- switch(clusterFunction, 
+       clusterFunctionHclust = clusterFunctionHclust(data = data,
                           distMethod = "euclidean", 
-                          clusterMethod = "complete")
+                          clusterMethod = "complete"))
   return(clusterResult)
 }
 clusterResult <- analyse()
