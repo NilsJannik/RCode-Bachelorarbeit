@@ -4,8 +4,8 @@
 memory.limit()
 memory.limit(size = 12000)
 
-setwd("C:/Users/Nils Jannik/Desktop/Bachelorarbeit")
-load("Datensaetze/mainHiera.RData") 
+#setwd("C:/Users/Nils Jannik/Desktop/Bachelorarbeit")
+load("mainHiera.RData") 
 
 library(igraph)
 library(PMCMR)
@@ -29,13 +29,11 @@ analyse <- function(data = mainHiera,
                     perfName = "ydist",
                     expParName = c("a","b","cc","d"),
                     confName = "confName",
+                    replName = "i",
                     algo.Name = c("Arc", "Stan", "Ico", "IcoCorrected", "Imp", 
                                   "ImpArc", "Wedge"),
                     clusterFunction = "clusterFunctionHclust")
 {
-  if("jobID"%in% colnames(data)){
-    data <- data[,colnames(data) != "jobID"]
-  }
   
   # Design .expID's
   .expID <- factor(apply(mainHiera[,expParName], 1, paste,collapse = "_"))
@@ -43,20 +41,16 @@ analyse <- function(data = mainHiera,
   .expID <- sort(as.vector(.expID),index = TRUE)
   data <- data[.expID$ix,]
   .expID <- .expID$x
-  newdata <- data.frame(data, .expID = .expID) 
-  
-  # Selektiere die Spalte mit dem Performanzindikator herraus und fuege die
-  # zugehoerige expID hinzu
-  N <- length(unique(.expID))
-  data <- data.frame(subset(newdata, select = perfName), 
-                     rep(1 : N, each = table(.expID)[1]))
-  colnames(data) <- c("ydist",".expID")
+  clustData <- data.frame(data[, c(confName, replName, perfName)], .expID = .expID) 
+  clustData$colid <- paste(clustData[, confName], clustData[, replName], sep = "_")
+
+  clustData <- dcast(clustData, .expID ~ colid, value.var = "ydist")
   
   # Lade ausgewaehlte clusterFunction  (bisjetzt nur clusterFunctionHclust)
-  source(paste0("RAnalyse/",clusterFunction,".RData"))
+  source(paste0(clusterFunction,".R"))
   
-clusterResult <- switch(clusterFunction, 
-       clusterFunctionHclust = clusterFunctionHclust(data = data,
+  clusterResult <- switch(clusterFunction, 
+       clusterFunctionHclust = clusterFunctionHclust(data = clustData,
                           distMethod = "euclidean", 
                           clusterMethod = "complete"))
   return(clusterResult)
@@ -64,16 +58,16 @@ clusterResult <- switch(clusterFunction,
 clusterResult <- analyse()
 #
 # Funktion zur Zuweisung des ClusterResult zu den Daten
-source("RAnalyse/designSections.RData")
+source("designSections.R")
 # Funktionen fuer die Tests:
-source("RAnalyse/pairwiseTests.RData")
+source("pairwiseTests.R")
 # Funktionen fuer die grafische Darstellung:
-source("RAnalyse/designGraph.RData")
-source("RAnalyse/design_matrix.RData")
-source("RAnalyse/design_edges.RData")
-source("RAnalyse/searchForTransitivity.RData")
-source("RAnalyse/useTransitivity.RData")
-source("RAnalyse/transform_connections.RData")
+source("designGraph.R")
+source("design_matrix.R")
+source("design_edges.R")
+source("searchForTransitivity.R")
+source("useTransitivity.R")
+source("transform_connections.R")
 
 
 # Weise den jeweiligen in clusterResult vorhandenen ergebenen Clustern
@@ -109,7 +103,7 @@ designGraph(testResults,
             transform_connections,
             shape = "circle",# oder square / sphere usw fuer Form der vertexes
             edge.width = 1,
-            testNiveaus = c(1e-10, 1e-5, 1e-2, 0.5),
+            testNiveaus = c(1e-12, 1e-6, 1e-2, 0.1),
             clustmittel) 
 # dev.off()
 ################################################################################

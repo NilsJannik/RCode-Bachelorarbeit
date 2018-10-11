@@ -15,7 +15,7 @@
 # - rankMatrix: Eine Matrix in dem in Zeile i und Spalte j der Durchschnittsrang
 #               der Performance des j-ten Algorithmus in der i-ten Clustergruppe
 #               ist
-pairwiseTests <- function(sectionObjects = sections, 
+pairwiseTests <- function(sectionObjects, 
                           perfName, 
                           confName, 
                           algo.Name){
@@ -24,7 +24,7 @@ pairwiseTests <- function(sectionObjects = sections,
   results <- c(rep(list(NULL), N))
  
   # paarweise Tests mit dem nemenyi Test
-  for(i in 1 : N){
+  for(i in 1:N){
     results[[i]] <- posthoc.kruskal.nemenyi.test(
       x = sectionObjects[[i]]$ydist, 
       g = sectionObjects[[i]]$confName, 
@@ -38,7 +38,11 @@ pairwiseTests <- function(sectionObjects = sections,
   for(i in 1:length(sectionObjects)){
     CN <- colnames(sectionObjects[[i]])
     
-    performance <- sectionObjects[[i]][ , CN == perfName]
+    tapply(sectionObjects[[i]][, perfName],
+      INDEX = sectionObjects[[i]][, c("jobID", "i")],
+      FUN = function(x) {print(x); stop()})
+    
+    performance <- sectionObjects[[i]][, perfName]
     algos <- sectionObjects[[i]][, CN == confName]
     
     rankData <- data.frame(algos, performance, rank(performance))

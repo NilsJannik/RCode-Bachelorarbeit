@@ -8,12 +8,12 @@
 # Eine Liste der Laenge der optimalen Clustergroesse in der in jedem Element 
 # alle dieser Clustergruppe zugehoerigen Elemente (in Form ihrer Indizes) stehen.
 clusterFunctionHclust <- function(data, 
-                             distMethod = "euclidean", 
-                             clusterMethod = "complete"){
+  distMethod = "euclidean", 
+  clusterMethod = "complete"){
   
   # hierachisches Clustern der Performancewerte.
-  h.cluster <- hclust(dist(data, method = distMethod), 
-                      method = clusterMethod)  
+  h.cluster <- hclust(dist(data, method = "euclidean"), 
+    method = "ward.D")
   
   # Funktion - Vollzieht die in hclust vollzogenen mergeoperationen nach und 
   #            findet so die jeweiligen Gruppen bei einer gegebenen optimalen
@@ -36,15 +36,15 @@ clusterFunctionHclust <- function(data,
     # innerhalb einer entsprechenden Liste von Objekten gefunden
     searchPosList <- function(object = Layers, MergeID){
       for(i in 1:length(object)){
-          if(!is.null(object[[i]])){
-            if(object[[i]][length(object[[i]])] == MergeID){
-              return(i)
-            }
+        if(!is.null(object[[i]])){
+          if(object[[i]][length(object[[i]])] == MergeID){
+            return(i)
           }
+        }
       }
       return(NA)
     }    
-
+    
     # Es muessen N - optimale Clustergroesse Mergeopberationen nachvollzogen
     # werden
     for(i in 1 : (N - clustersize)){
@@ -72,9 +72,9 @@ clusterFunctionHclust <- function(data,
       # Object2 hingegen besteht schon aus mehreren Objekten und wurd bereits
       # gemerged
       else if(object1 < 0 && object2 > 0){
-      # abs(object1) entspricht auch wieder dem wahren "Wert" von Objekt1
+        # abs(object1) entspricht auch wieder dem wahren "Wert" von Objekt1
         object1 <- abs(object1)
-      # Finde herraus an welcher Stelle die zu Objekt2 zugehoerigen Werte stehen.
+        # Finde herraus an welcher Stelle die zu Objekt2 zugehoerigen Werte stehen.
         posObject2 <- searchPosList(Layers, MergeID = object2)
         # Fuege Object1 mit MergeID hinter Object2 ein
         nl2 <- length(Layers[[posObject2]])
@@ -95,7 +95,7 @@ clusterFunctionHclust <- function(data,
         Layers[[posObject1]][length(Layers[[posObject1]]) + 1] <- i
         # Setze die Werte an der Stelle von Objekt2 auf 0
         Layers[[posObject2]] <- 0
-        }
+      }
       
     }
     # Lese die der vorher bestimmten Clustergroesse entsprechenden Anzahl an
@@ -113,7 +113,8 @@ clusterFunctionHclust <- function(data,
     return(result)
   }
   
-  clusterResult <- mergefunction(h.cluster, clustersize = 5 ) 
+  #clusterResult <- mergefunction(h.cluster, clustersize = 5 ) 
+  clusterResult <- lapply(1:3, function(i) which(cutree(h.cluster, 3) ==i))
   ## Clustersize muss noch automatisch bestimmt werden 
   ########
   return(clusterResult)
